@@ -1,0 +1,51 @@
+keywords:
+
+economy
+market
+stock
+recession
+inflation
+crypto
+unemployment
+GDP
+interest rate
+world news
+geopolitics
+financial crisis
+bonds
+equities
+federal reserve
+monetary policy
+trade war
+investment
+capital markets
+banking
+mergers
+acquisitions
+fiscal policy
+budget deficit
+oil prices
+commodity prices
+
+
+
+
+
+
+target users:
+
+business
+businessinsider
+WSJ
+FT
+CNBC
+Forbes
+Bloomberg
+Reuters
+TheEconomist
+nytimes
+FTMarkets
+MarketWatch
+MorningstarInc
+IMFNews
+WorldBank
