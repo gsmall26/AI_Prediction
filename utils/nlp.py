@@ -6,6 +6,21 @@ import spacy
 nlp_model = spacy.load("en_core_web_sm")
 
 
+"""
+This module processes a post and prepares it for database insertion.
+
+process_tweet_for_db expectes dictionary structure for nlp
+tweet_dict = {
+    "text": "The content of the post",
+    "author_username": "user123",
+    "created_at": datetime.utcnow(),
+    "tweet_link": "https://...",
+    "author_id": 12345,  # optional
+    "followers_count": 1000,  # optional
+    "verified": True  # optional
+}
+"""
+
 def process_tweet_for_db(tweet_dict):
     """
     Convert a raw tweet dictionary into a dictionary ready for SQLite insertion
