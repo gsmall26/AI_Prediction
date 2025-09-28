@@ -1,1 +1,6 @@
 # Python dependencies
+flask
+tweepy
+python-dotenv
+spacy
+tabulate

@@ -35,25 +35,31 @@ def process_tweet_for_db(tweet_dict):
     text = tweet_dict.get("text", "")
     cleaned_text = clean_text(text)
 
-    # NLP extractions
-    subject_topic = extract_topic(cleaned_text)
-    timeframe_as_stated, timeframe_start, timeframe_end = extract_timeframe(cleaned_text)
-    conditional = detect_conditional(cleaned_text)
-    certainty_level = extract_certainty(cleaned_text)
-    tags_keywords = extract_keywords(cleaned_text)
+    # Define NLP functions with their target keys
+    nlp_fields = {
+        "subject_topic": extract_topic,
+        "timeframe_as_stated": lambda t: extract_timeframe(t)[0],
+        "timeframe_start": lambda t: extract_timeframe(t)[1],
+        "timeframe_end": lambda t: extract_timeframe(t)[2],
+        "conditional": detect_conditional,
+        "certainty_level": extract_certainty,
+        "tags_keywords": extract_keywords
+    }
 
+    nlp_results = {}
+    for key, func in nlp_fields.items():
+        try:
+            nlp_results[key] = func(cleaned_text)
+        except Exception:
+            nlp_results[key] = None
+
+    # Build final DB entry with essential fields guaranteed
     db_entry = {
-        "speaker_name": tweet_dict.get("author_username", ""),
+        "speaker_name": tweet_dict.get("author_username", "unknown"),
         "organization": None,
         "prediction_text": cleaned_text,
-        "subject_topic": subject_topic,
-        "prediction_type": "prediction" if conditional else "statement",
+        "prediction_type": "prediction" if nlp_results.get("conditional") else "statement",
         "prediction_category": None,
-        "timeframe_as_stated": timeframe_as_stated,
-        "timeframe_start": timeframe_start,
-        "timeframe_end": timeframe_end,
-        "certainty_level": certainty_level,
-        "conditional": conditional,
         "prediction_date": tweet_dict.get("created_at", datetime.utcnow()),
         "source_type": "Twitter",
         "source_link": tweet_dict.get("tweet_link", ""),
@@ -61,8 +67,9 @@ def process_tweet_for_db(tweet_dict):
         "outcome": None,
         "outcome_evidence": None,
         "scoring_confidence": None,
-        "tags_keywords": tags_keywords,
-        "notes": None
+        "notes": None,
+        # Merge optional NLP results
+        **nlp_results
     }
 
     return db_entry

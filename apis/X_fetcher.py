@@ -94,15 +94,21 @@ def fetch_tweets(max_results=10, user_batch_size=1, keyword_batch_size=1):
                     tweets_data.append(tweet_dict)
 
                     # --- NLP + DB insertion ---
-                    # db_entry = process_and_insert(tweet_dict)
-                    if tweet_dict is not None:
-                        print("NLP processed result:")
-                        db_entry = process_and_insert(tweet_dict)
-                    else:
-                        print(f"Skipped tweet by @{user.username}: invalid tweet data")
+                    db_entry = process_and_insert(tweet_dict)
 
+                    if db_entry is None:
+                        print(f"Skipped tweet by @{user.username}: process_and_insert returned None")
+                        continue
 
-                    # Print the NLP-processed result
+                    # Now safe to check crucial fields
+                    crucial_fields = ["prediction_text", "speaker_name", "source_link", "prediction_date"]
+                    missing_crucial = [f for f in crucial_fields if db_entry.get(f) is None]
+                    
+                    if missing_crucial:
+                        print(f"Skipped tweet by @{user.username}: missing crucial fields {missing_crucial}")
+                        continue
+
+                    # Print NLP results
                     print("NLP processed result:")
                     for k, v in db_entry.items():
                         print(f"  {k}: {v}")
