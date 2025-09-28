@@ -94,7 +94,13 @@ def fetch_tweets(max_results=10, user_batch_size=1, keyword_batch_size=1):
                     tweets_data.append(tweet_dict)
 
                     # --- NLP + DB insertion ---
-                    db_entry = process_and_insert(tweet_dict)
+                    # db_entry = process_and_insert(tweet_dict)
+                    if tweet_dict is not None:
+                        print("NLP processed result:")
+                        db_entry = process_and_insert(tweet_dict)
+                    else:
+                        print(f"Skipped tweet by @{user.username}: invalid tweet data")
+
 
                     # Print the NLP-processed result
                     print("NLP processed result:")
