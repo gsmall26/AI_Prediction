@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import tweepy
 import csv
 import itertools
-from utils.pipeline import process_and_insert
+from utils.pipeline import process_entry, insert_entry
 from utils.nlp import process_tweet_for_db
 
 # Load API keys
@@ -93,26 +93,27 @@ def fetch_tweets(max_results=10, user_batch_size=1, keyword_batch_size=1):
 
                     tweets_data.append(tweet_dict)
 
-                    # --- NLP + DB insertion ---
-                    db_entry = process_and_insert(tweet_dict)
+                    # --- NLP processing ---
+                    db_entry = process_entry(tweet_dict)
 
-                    if db_entry is None:
-                        print(f"Skipped tweet by @{user.username}: process_and_insert returned None")
-                        continue
-
-                    # Now safe to check crucial fields
+                    # Check crucial fields before DB insert
                     crucial_fields = ["prediction_text", "speaker_name", "source_link", "prediction_date"]
-                    missing_crucial = [f for f in crucial_fields if db_entry.get(f) is None]
-                    
-                    if missing_crucial:
-                        print(f"Skipped tweet by @{user.username}: missing crucial fields {missing_crucial}")
+                    missing = [f for f in crucial_fields if not db_entry.get(f)]
+
+                    if missing:
+                        print(f"Skipped tweet by @{user.username}: missing crucial fields {missing}")
                         continue
 
-                    # Print NLP results
+                    # Safe to insert
+                    insert_entry(db_entry)
+                    print(f"Inserted by @{db_entry['speaker_name']} into DB")
+
+                    # Debug: print NLP results
                     print("NLP processed result:")
                     for k, v in db_entry.items():
                         print(f"  {k}: {v}")
                     print("-" * 40)
+
 
         except Exception as e:
             print(f"Error fetching tweets for batch {u_batch} + {k_batch}: {e}")

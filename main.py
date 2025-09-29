@@ -37,23 +37,59 @@ def fetch():
 def predictions():
     try:
         conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row  # allows accessing columns by name
         c = conn.cursor()
-        c.execute("SELECT speaker_name, prediction_text, prediction_date, source_link FROM predictions ORDER BY id DESC LIMIT 50")
+        c.execute("SELECT * FROM predictions ORDER BY id DESC LIMIT 50")
         rows = c.fetchall()
         conn.close()
 
-        predictions_list = [
-            {
-                "speaker": row[0],
-                "text": row[1],
-                "date": row[2],
-                "link": row[3]
-            } for row in rows
+        # Map DB column names to friendly names
+        friendly_keys = {
+            "id": "id",
+            "speaker_name": "speaker",
+            "organization": "organization",
+            "prediction_text": "text",
+            "subject_topic": "topic",
+            "prediction_type": "type",
+            "prediction_category": "category",
+            "timeframe_as_stated": "timeframe_as_stated",
+            "timeframe_start": "timeframe_start",
+            "timeframe_end": "timeframe_end",
+            "certainty_level": "certainty_level",
+            "conditional": "conditional",
+            "prediction_date": "date",
+            "source_type": "source_type",
+            "source_link": "link",
+            "resolution_date": "resolution_date",
+            "outcome": "outcome",
+            "outcome_evidence": "outcome_evidence",
+            "scoring_confidence": "scoring_confidence",
+            "tags_keywords": "keywords",
+            "notes": "notes"
+        }
+
+        # Define a preferred order for JSON output
+        preferred_order = [
+            "id", "speaker", "organization", "text", "topic", "type", "category",
+            "date", "timeframe_as_stated", "timeframe_start", "timeframe_end",
+            "certainty_level", "conditional", "source_type", "link",
+            "resolution_date", "outcome", "outcome_evidence",
+            "scoring_confidence", "keywords", "notes"
         ]
 
+        predictions_list = []
+        for row in rows:
+            row_dict = {friendly_keys.get(k, k): row[k] if row[k] is not None else None for k in row.keys()}
+            # Reorder according to preferred_order
+            ordered_row = {k: row_dict.get(k) for k in preferred_order}
+            predictions_list.append(ordered_row)
+
         return jsonify(predictions_list)
+
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
 
 
 # Run Flask server

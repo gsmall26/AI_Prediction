@@ -3,10 +3,10 @@ from utils.nlp import process_tweet_for_db
 
 DB_PATH = "data/predictions.db"
 
-def insert_prediction(db_entry, db_path=DB_PATH):
-    #insert cleaned up data into predictions table
 
-    conn = sqlite3.connect(DB_PATH)
+def insert_entry(db_entry, db_path=DB_PATH):
+    # insert a record into predictions table
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     columns = ", ".join(db_entry.keys())
     placeholders = ", ".join("?" for _ in db_entry)
@@ -15,10 +15,15 @@ def insert_prediction(db_entry, db_path=DB_PATH):
     conn.commit()
     conn.close()
 
-def process_and_insert(tweet_dict, db_path=DB_PATH):
-    #run the NLP processing on dictionary structure, call insertion function
-    
-    db_entry = process_tweet_for_db(tweet_dict)
-    insert_prediction(db_entry)
-    print(f"Inserted tweet by @{db_entry['speaker_name']} into DB")
 
+def process_entry(raw_item):
+    # run NLP and return a cleaned dict ready for DB
+    return process_tweet_for_db(raw_item)
+
+
+def process_and_insert(raw_item, db_path=DB_PATH):
+    # process a raw item and insert it into DB
+    entry = process_entry(raw_item)
+    insert_entry(entry, db_path)
+    print(f"Inserted by @{entry['speaker_name']} into DB")
+    return entry
